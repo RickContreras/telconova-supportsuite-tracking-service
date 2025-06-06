@@ -21,3 +21,9 @@ Microservicio del sistema **TelcoNova SupportSuite** responsable de registrar y 
 - Permitir edición del **tiempo invertido** con justificación y auditoría
 - Emitir **eventos de dominio** para otros microservicios
 - Notificar actualizaciones **en tiempo real** mediante WebSocket
+
+## 📚 Recursos Adicionales
+
+* [Spring WebFlux Reference](https://docs.spring.io/spring-framework/docs/current/reference/html/web-reactive.html)
+* [Azure Blob Storage SDK](https://docs.microsoft.com/azure/storage/blobs)
+* [RFC 6455 WebSockets](https://tools.ietf.org/html/rfc6455)
