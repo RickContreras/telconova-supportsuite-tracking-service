@@ -1,5 +1,5 @@
 {
-    "name": "spring-boot-app-service-postgresql-infra",
+    "name": "telconova-tracking-service",
     "dockerComposeFile": "docker-compose.yml",
     "service": "app",
     "workspaceFolder": "/workspace",
@@ -13,12 +13,11 @@
                 "ms-azuretools.azure-dev",
                 "vscjava.vscode-java-pack",
                 "vscjava.vscode-spring-initializr",
-                "vscjava.vscode-spring-boot-dashboard",
-                "vscjava.vscode-spring-boot",
-                "mtxr.sqltools",
+                "redhat.java",
+                "vmware.vscode-boot-dev-pack",
                 "mtxr.sqltools-driver-pg",
                 "github.copilot",
-                "github.copilot-chat"
+                "eamodio.gitlens"
             ],
             "settings": {
                 "sqltools.connections": [
@@ -28,25 +27,47 @@
                         "previewLimit": 50,
                         "server": "db",
                         "port": 5432,
-                        "database": "telconova",
-                        "username": "postgres",
-                        "password": "root1"
+                        "database": "${env:POSTGRES_DB}",
+                        "username": "${env:POSTGRES_USER}",
+                        "password": "${env:POSTGRES_PASSWORD}"
                     }
                 ],
                 "java.jdt.ls.java.home": "/usr/local/openjdk-21",
                 "java.configuration.updateBuildConfiguration": "automatic",
                 "java.format.settings.url": "https://raw.githubusercontent.com/google/styleguide/gh-pages/eclipse-java-google-style.xml",
                 "java.format.settings.profile": "GoogleStyle",
-                "java.compile.nullAnalysis.mode": "automatic"
+                "editor.formatOnSave": true,
+                "java.compile.nullAnalysis.mode": "automatic",
+                "java.test.config": {
+                    "vmArgs": [
+                        "-Dspring.profiles.active=dev"
+                    ]
+                }
             }
         }
     },
     "forwardPorts": [
-        8080, 5432
+        8080,
+        5432,
+        6379
     ],
+    "portsAttributes": {
+        "8080": {
+            "label": "Application",
+            "onAutoForward": "notify"
+        },
+        "5432": {
+            "label": "PostgreSQL",
+            "onAutoForward": "silent"
+        },
+        "6379": {
+            "label": "Redis",
+            "onAutoForward": "silent"
+        }
+    },
     "remoteUser": "vscode",
     "mounts": [
-        "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
+        "source=${localWorkspaceFolder}/.m2,target=/home/vscode/.m2,type=bind,consistency=cached"
     ],
     "postCreateCommand": "sudo chmod 666 /var/run/docker.sock || true"
 }

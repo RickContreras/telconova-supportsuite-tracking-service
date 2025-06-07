@@ -1,36 +1,31 @@
-FROM openjdk:21-jdk-slim
+FROM openjdk:21-slim-bullseye
 
-# Instalar dependencias necesarias
-RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
-    && apt-get -y install --no-install-recommends \
-        postgresql-client \
-        git \
-        maven \
-        sudo \
-        curl \
-        gnupg \
-    && apt-get clean -y && rm -rf /var/lib/apt/lists/*
+# Variables de entorno esenciales
+ENV DEBIAN_FRONTEND=noninteractive \
+    LANG=C.UTF-8 \
+    JAVA_HOME=/usr/local/openjdk-21
 
-# Configurar el repositorio de Docker
-RUN mkdir -p /etc/apt/keyrings \
-    && curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg \
-    && echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu jammy stable" > /etc/apt/sources.list.d/docker.list \
-    && apt-get update
-
-# Instalar Docker y sus componentes
-RUN apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin \
-    && apt-get clean -y && rm -rf /var/lib/apt/lists/*
-
-# Crear el usuario vscode con permisos adecuados
-RUN useradd -ms /bin/bash vscode \
-    && mkdir -p /workspace \
-    && chown -R vscode:vscode /workspace \
-    && usermod -aG sudo vscode \
-    && usermod -aG docker vscode \
+# Instalación de dependencias esenciales
+RUN apt-get update && apt-get -y install --no-install-recommends \
+    postgresql-client \
+    git \
+    maven \
+    sudo \
+    curl \
+    ca-certificates \
+    zip \
+    unzip \
+    htop \
+    redis-tools \
+    redis-server \
+    # Limpieza
+    && apt-get clean -y \
+    && rm -rf /var/lib/apt/lists/* \
+    # Configuración de usuario
+    && useradd -ms /bin/bash vscode \
+    && mkdir -p /workspace /home/vscode/.m2 \
+    && chown -R vscode:vscode /workspace /home/vscode \
     && echo "vscode ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
-# Establecer el usuario vscode como predeterminado
 USER vscode
-
-# Establecer el directorio de trabajo
 WORKDIR /workspace

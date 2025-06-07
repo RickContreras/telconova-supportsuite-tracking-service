@@ -5,31 +5,49 @@ services:
       dockerfile: .devcontainer/Dockerfile
     volumes:
       - ..:/workspace:cached
+      - ~/.gitconfig:/home/vscode/.gitconfig:ro
     command: sleep infinity
     network_mode: service:db
+    env_file:
+      - ./devcontainer.env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
 
   db:
-    image: postgres:latest
+    image: postgres:16-alpine
     restart: unless-stopped
     volumes:
       - postgres-data:/var/lib/postgresql/data
-    environment:
-      POSTGRES_DB: telconova
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: root1
-    networks:
-      - devcontainer-network
+    env_file:
+      - ./devcontainer.env
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    ports:
+      - "5432:5432"
 
   redis:
-    image: redis
+    image: redis:7-alpine
     restart: unless-stopped
-    networks:
-      - devcontainer-network
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "6379:6379"
 
 volumes:
   postgres-data:
-    name: devcontainer_postgres_data
-
-networks:
-  devcontainer-network:
-    driver: bridge
+    name: telconova_postgres_data
+  redis-data:
+    name: telconova_redis_data
