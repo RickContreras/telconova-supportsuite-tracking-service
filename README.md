@@ -22,6 +22,15 @@ Microservicio del sistema **TelcoNova SupportSuite** responsable de registrar y 
 - Emitir **eventos de dominio** para otros microservicios
 - Notificar actualizaciones **en tiempo real** mediante WebSocket
 
+## Redis
+
+Para comprobar la funcionalidad de redis ejecute esto:
+
+```sh
+redis-cli -h redis ping #Recibir una respuesta de redis
+redis-cli -h redis #Entrar al cli de redis.
+```
+
 ## 📚 Recursos Adicionales
 
 * [Spring WebFlux Reference](https://docs.spring.io/spring-framework/docs/current/reference/html/web-reactive.html)
