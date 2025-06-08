@@ -13,13 +13,15 @@ class TestcontainersConfiguration {
 	@Bean(destroyMethod = "stop")
 	@ServiceConnection(name = "postgres")
 	PostgreSQLContainer<?> postgresContainer() {
-		return new PostgreSQLContainer<>(DockerImageName.parse("postgres:latest"));
+		return new PostgreSQLContainer<>(DockerImageName.parse("postgres:16-alpine"))
+				.withStartupTimeoutSeconds(120) // Increased timeout
+				.withUsername("test").withPassword("test").withDatabaseName("test");
 	}
 
 	@Bean(destroyMethod = "stop")
 	@ServiceConnection(name = "redis")
 	GenericContainer<?> redisContainer() {
-		return new GenericContainer<>(DockerImageName.parse("redis:latest")).withExposedPorts(6379);
+		return new GenericContainer<>(DockerImageName.parse("redis:7-alpine"))
+				.withExposedPorts(6379);// .withStartupTimeoutSeconds(60);
 	}
-
 }

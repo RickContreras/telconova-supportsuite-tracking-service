@@ -5,7 +5,10 @@
     "workspaceFolder": "/workspace",
     "features": {
         "ghcr.io/azure/azure-dev/azd:latest": {},
-        "docker-in-docker": "latest"
+        "docker-in-docker": {
+            "version": "latest",
+            "moby": true
+        }
     },
     "customizations": {
         "vscode": {
@@ -73,7 +76,13 @@
     },
     "remoteUser": "vscode",
     "mounts": [
-        "source=${localWorkspaceFolder}/.m2,target=/home/vscode/.m2,type=bind,consistency=cached"
+        "source=${localWorkspaceFolder}/.m2,target=/home/vscode/.m2,type=bind,consistency=cached",
+        "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
     ],
-    "postCreateCommand": "sudo chmod 666 /var/run/docker.sock || true"
+    "remoteEnv": {
+        "TESTCONTAINERS_HOST_OVERRIDE": "host.docker.internal",
+        "DOCKER_HOST": "unix:///var/run/docker.sock",
+        "TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE": "/var/run/docker.sock"
+    },
+    "postCreateCommand": "sudo chmod 666 /var/run/docker.sock"
 }
