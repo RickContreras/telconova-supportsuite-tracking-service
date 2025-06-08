@@ -1,0 +1,177 @@
+server:
+  port: ${PORT:8080}
+  http2:
+    enabled: true
+spring:
+  application:
+    name: tracking-service
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+  liquibase:
+        enabled: false # Poner en true mas adelante
+        change-log: classpath:db/changelog/db.changelog-master.yaml
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    driver-class-name: ${SPRING_DATASOURCE_DRIVER_CLASS_NAME:org.postgresql.Driver}
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 20000
+      idle-timeout: 300000
+      max-lifetime: 1800000
+  data:
+    redis:
+      host: ${REDIS_HOST:redis}
+      port: ${REDIS_PORT:6379}
+      timeout: 2000
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 2
+  cache:
+    type: redis
+    redis:
+      time-to-live: 600000
+      cache-null-values: false
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: ${SHOW_SQL:false}
+    properties:
+      hibernate:
+        "[format_sql]": false # Cambiar a true si se quiere ver el SQL formateado
+        jdbc:
+          "[batch_size]": 25
+        "[order_inserts]": true
+        "[order_updates]": true
+        query:
+          "[in_clause_parameter_padding]": true
+        "[generate_statistics]": ${JPA_STATISTICS:false}
+
+    open-in-view: false
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+  
+  #cloud:
+  #  azure:
+  #    servicebus:
+  #      connection-string: ${SERVICEBUS_CONNECTION_STRING}
+  #      topic: ${SERVICEBUS_TOPIC:tracking-events}
+  #      subscription: ${SERVICEBUS_SUBSCRIPTION:tracking-subscription}
+  #      pricing-tier: ${SERVICEBUS_PRICING_TIER:Standard}
+
+  security:
+    filter:
+      order: 10
+    user:
+      name: ${ADMIN_USER:admin}
+      password: ${ADMIN_PASSWORD}
+      roles: ADMIN
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+      probes:
+        enabled: true
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+        step: 1m
+  metrics:
+    tags:
+      application: ${spring.application.name}
+    distribution:
+      percentiles-histogram:
+        "[http.server.requests]": true
+      slo:
+        "[http.server.requests]": 50ms, 100ms, 200ms, 500ms
+      percentiles:
+        "[http.server.requests]": 0.5, 0.9, 0.95, 0.99
+  tracing:
+    sampling:
+      probability: 1.0
+
+logging:
+  level:
+    root: INFO
+    "[com.telconova.tracking]": DEBUG
+    "[org.hibernate.SQL]": INFO
+    "[org.hibernate.type.descriptor.sql.BasicBinder]": INFO
+    "[org.springframework.web]": INFO
+    "[org.springframework.security]": INFO
+    "[org.hibernate.stat]": DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %highlight(%-5level) - %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: ./logs/tracking-service.log
+  logback:
+    rollingpolicy:
+      max-file-size: 10MB
+      max-history: 7
+      total-size-cap: 100MB
+
+app:
+  cors:
+    allowed-origins: ${ALLOWED_ORIGINS:*}
+    allowed-methods: GET, POST, PUT, DELETE, OPTIONS
+    allowed-headers: "*"
+    allow-credentials: true
+    max-age: 3600
+  
+  websocket:
+    path: /ws/tracking
+    allowed-origins: ${ALLOWED_ORIGINS:*}
+    endpoint-prefix: /topic
+    application-destination-prefix: /app
+    user-destination-prefix: /user
+    heartbeat-interval: 10000
+    heartbeat-time-to-live: 30000
+  jwt:
+    secret: ${JWT_SECRET}
+    roles:
+      admin: ADMIN_TRACKING
+      user: USER_TRACKING
+  storage:
+    type: ${STORAGE_TYPE:local} # local, azure, s3, minio
+    local:
+      location: ${STORAGE_LOCAL_PATH:uploads}
+    azure:
+      connection-string: ${AZURE_STORAGE_CONNECTION_STRING:}
+      container-name: ${AZURE_STORAGE_CONTAINER:evidencias}
+      account-name: ${AZURE_STORAGE_ACCOUNT}
+      account-key: ${AZURE_STORAGE_KEY}
+      endpoint: https://${AZURE_STORAGE_ACCOUNT}.blob.core.windows.net
+    s3:
+      access-key: ${AWS_ACCESS_KEY:}
+      secret-key: ${AWS_SECRET_KEY:}
+      region: ${AWS_REGION:us-east-1}
+      bucket-name: ${S3_BUCKET:evidencias}
+    minio:
+      endpoint: ${MINIO_ENDPOINT:http://localhost:9000}
+      access-key: ${MINIO_ACCESS_KEY:minioadmin}
+      secret-key: ${MINIO_SECRET_KEY:minioadmin}
+      bucket-name: ${MINIO_BUCKET:evidencias}
+
+springdoc:
+  api-docs:
+    enabled: true
+    path: /api-docs
+  swagger-ui:
+    path: /
+    enabled: true
+    tags-sorter: alpha
+    operations-sorter: method
+  packages-to-scan: com.telconova.tracking.controllers
+  show-actuator: true
