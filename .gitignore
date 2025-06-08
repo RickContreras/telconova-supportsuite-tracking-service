@@ -1,6 +1,10 @@
+.m2/
 HELP.md
-target/
-build/
+/target/
+/build/
+/.gradle/
+/logs/
+/temp/
 !**/src/main/**/target/
 !**/src/test/**/target/
 !**/src/main/**/build/
@@ -19,9 +23,13 @@ out/
 ### Documentation ###
 HELP.md
 
+### Docker ###
+.docker-data/
+docker-data/
+
 ### IDE - Eclipse/STS ###
 .metadata
-bin/
+/bin/
 .apt_generated
 .classpath
 .factorypath
@@ -88,6 +96,7 @@ cmake-build-*/
 ### Java ###
 *.class
 *.log
+*.log.*
 *.ctxt
 .mtj.tmp/
 *.jar
@@ -99,10 +108,12 @@ cmake-build-*/
 *.rar
 hs_err_pid*
 replay_pid*
+!gradle/wrapper/gradle-wrapper.jar
 
 ### Operating Systems ###
 # macOS
 .DS_Store
+.DS_Store?
 .AppleDouble
 .LSOverride
 Icon
@@ -160,4 +171,15 @@ local.properties
 ### Environment Variables ###
 .env
 .env.*
-!.env.example
+!.env.minimal.example
+!.env.complete.example
+
+application-local.yml
+application-local.properties
+
+### Certificados y claves ###
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks

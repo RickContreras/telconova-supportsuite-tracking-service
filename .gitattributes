@@ -1,0 +1,66 @@
+# Auto detect text files and perform LF normalization
+* text=auto
+
+# Declara archivos que siempre tendrán finales de línea CRLF en checkout
+*.bat text eol=crlf
+
+# Declara archivos que siempre tendrán finales de línea LF en checkout
+*.sh text eol=lf
+*.java text eol=lf diff=java
+*.xml text eol=lf diff=xml
+*.yaml text eol=lf
+*.yml text eol=lf
+*.md text eol=lf diff=markdown
+*.json text eol=lf
+*.properties text
+*.sql text
+Dockerfile text eol=lf
+mvnw text eol=lf
+gradlew text eol=lf
+/mvnw text eol=lf
+*.cmd text eol=crlf
+*.bat text eol=crlf
+*.html text diff=html
+*.css text diff=css
+*.js text
+*.json text
+*.config text
+
+# Docker
+Dockerfile text
+*.dockerfile text
+.dockerignore text
+docker-compose.yml text
+docker-compose.yaml text
+
+# Archivos que siempre tendrán LF (Unix)
+.gitignore text eol=lf
+.gitattributes text eol=lf
+gradlew text eol=lf
+
+# Configuración específica para Maven
+pom.xml text diff=xml eol=lf
+*.xml text diff=xml
+
+# Binarios (no modificar)
+*.jar binary
+*.war binary
+*.ear binary
+*.class binary
+*.dll binary
+*.exe binary
+*.so binary
+*.dylib binary
+*.zip binary
+*.tar binary
+*.gz binary
+*.rar binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+
+# Linguist overrides para GitHub
+*.java linguist-language=Java
