@@ -27,9 +27,9 @@
                         "previewLimit": 50,
                         "server": "db",
                         "port": 5432,
-                        "database": "${env:POSTGRES_DB}",
-                        "username": "${env:POSTGRES_USER}",
-                        "password": "${env:POSTGRES_PASSWORD}"
+                        "database": "${containerEnv:POSTGRES_DB}",
+                        "username": "${containerEnv:POSTGRES_USER}",
+                        "password": "${containerEnv:POSTGRES_PASSWORD}"
                     }
                 ],
                 "java.jdt.ls.java.home": "/usr/local/openjdk-21",
@@ -54,15 +54,21 @@
     "portsAttributes": {
         "8080": {
             "label": "Application",
-            "onAutoForward": "notify"
+            "onAutoForward": "notify",
+            "protocol": "http",
+            "visibility": "public"
         },
         "5432": {
             "label": "PostgreSQL",
-            "onAutoForward": "silent"
+            "onAutoForward": "silent",
+            "protocol": "http",
+            "visibility": "public"
         },
         "6379": {
             "label": "Redis",
-            "onAutoForward": "silent"
+            "onAutoForward": "silent",
+            "protocol": "http",
+            "visibility": "public"
         }
     },
     "remoteUser": "vscode",
