@@ -74,33 +74,81 @@ spring:
       roles: ADMIN
 
 management:
+  server:
+    port: 8081
+  
   endpoints:
     web:
+      base-path: /actuator
       exposure:
         include: health,info,prometheus,metrics
+      cors:
+        allowed-origins: "*" #"http://localhost:3000,https://grafana.telconova.com"
+        allowed-methods: GET
+        
   endpoint:
     health:
       show-details: when-authorized
+      group:
+        readiness:
+          include: readinessState,db
+        liveness:
+          include: livenessState,diskSpace
       probes:
         enabled: true
+    prometheus:
+      access: read-only  
+    metrics:
+      access: read-only  
+      
+  metrics:
+    tags:
+      application: tracking-service
+      service: telconova-supportsuite
+      environment: ${spring.profiles.active:default}
+      version: ${info.app.version:1.0.0} 
+    distribution:
+      percentiles-histogram:
+        "[http.server.requests]": true
+        "[tracking.avance.processing.time]": true
+        "[tracking.evidencia.upload.time]": true 
+      slo:
+        "[http.server.requests]": 50ms,100ms,200ms,500ms,1s,2s
+        "[tracking.avance.processing.time]": 100ms,500ms,1s
+        "[tracking.evidencia.upload.time]": 1s,5s,10s     
+      percentiles:
+        "[http.server.requests]": 0.5,0.95,0.99
+        "[tracking.avance.processing.time]": 0.5,0.9,0.95,0.99
+    enable:
+      jvm: true
+      process: true
+      system: true
+      tomcat: true
+      jdbc: true
+      logback: true
   prometheus:
     metrics:
       export:
         enabled: true
-        step: 1m
-  metrics:
-    tags:
-      application: ${spring.application.name}
-    distribution:
-      percentiles-histogram:
-        "[http.server.requests]": true
-      slo:
-        "[http.server.requests]": 50ms, 100ms, 200ms, 500ms
-      percentiles:
-        "[http.server.requests]": 0.5, 0.9, 0.95, 0.99
-  tracing:
-    sampling:
-      probability: 1.0
+        step: 30s
+        descriptions: true
+  info:
+    java:
+      enabled: true
+    env:
+      enabled: true
+    git:
+      mode: simple
+    build:
+      enabled: true
+    os:
+      enabled: true
+
+info:  
+  app:
+    name: Tracking Service
+    description: Gestión de avances técnicos - TelcoNova SupportSuite
+    version: 1.0.0  
 
 logging:
   level:
