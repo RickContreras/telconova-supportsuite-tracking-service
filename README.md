@@ -31,6 +31,35 @@ redis-cli -h redis ping #Recibir una respuesta de redis
 redis-cli -h redis #Entrar al cli de redis.
 ```
 
+## Requisitos
+
+- Java 21
+- Maven 3.6.3
+- Docker 28.1.1-1 y Docker Compose 2.36.2-1
+- PostgreSQL 13.21
+- Redis 6.0.16
+
+## Configuración
+
+Copia el archivo `.env.minimal.example` a `.env` y ajusta las variables según tu entorno.
+
+## Ejecución
+
+### Local con Maven
+
+Una vez creado el archivo .env ejecutar el siguiente comando:
+
+```bash
+export $(cat .env | xargs)
+```
+
+Luego ejecute la instalacion de paquetes y corra el proyecto.
+
+```bash
+mvn clean install
+mvn spring-boot:run
+```
+
 ## 📚 Recursos Adicionales
 
 * [Spring WebFlux Reference](https://docs.spring.io/spring-framework/docs/current/reference/html/web-reactive.html)
