@@ -3,7 +3,6 @@ package com.telconova.tracking.service.impl;
 import com.telconova.tracking.entity.Avance;
 import com.telconova.tracking.repository.AvanceRepository;
 import com.telconova.tracking.service.AvanceService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
@@ -13,14 +12,10 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Service
+@lombok.RequiredArgsConstructor
 public class AvanceServiceImpl implements AvanceService {
 
     private final AvanceRepository avanceRepository;
-
-    @Autowired
-    public AvanceServiceImpl(AvanceRepository avanceRepository) {
-        this.avanceRepository = avanceRepository;
-    }
 
     @Override
     public Avance save(Avance avance) {
