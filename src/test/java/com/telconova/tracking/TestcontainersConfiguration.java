@@ -12,16 +12,24 @@ public class TestcontainersConfiguration {
 
 	@Bean(destroyMethod = "stop")
 	@ServiceConnection(name = "postgres")
-	PostgreSQLContainer<?> postgresContainer() {
+	public PostgreSQLContainer<?> postgreSQLContainer() {
 		return new PostgreSQLContainer<>(DockerImageName.parse("postgres:16-alpine"))
-				.withStartupTimeoutSeconds(120) // Increased timeout
-				.withUsername("test").withPassword("test").withDatabaseName("test");
+				.withStartupTimeoutSeconds(120).withDatabaseName("testdb").withUsername("test")
+				.withPassword("test");
 	}
 
 	@Bean(destroyMethod = "stop")
 	@ServiceConnection(name = "redis")
-	GenericContainer<?> redisContainer() {
-		return new GenericContainer<>(DockerImageName.parse("redis:7-alpine"))
-				.withExposedPorts(6379);// .withStartupTimeoutSeconds(60);
+	public GenericContainer<?> redisContainer() {
+		GenericContainer<?> redisContainer =
+				new GenericContainer<>(DockerImageName.parse("redis:7-alpine"))
+						.withExposedPorts(6379);
+		redisContainer.start();
+
+		System.setProperty("spring.data.redis.host", redisContainer.getHost());
+		System.setProperty("spring.data.redis.port",
+				String.valueOf(redisContainer.getMappedPort(6379)));
+
+		return redisContainer;
 	}
 }
