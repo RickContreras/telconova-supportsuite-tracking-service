@@ -157,6 +157,8 @@ logging:
     "[org.hibernate.SQL]": INFO
     "[org.hibernate.type.descriptor.sql.BasicBinder]": INFO
     "[org.springframework.web]": INFO
+    "[org.springframework.cache]": DEBUG
+    "[org.springframework.data.redis]": DEBUG
     "[org.springframework.security]": INFO
     "[org.hibernate.stat]": DEBUG
   pattern:
