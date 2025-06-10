@@ -190,6 +190,7 @@ app:
     heartbeat-time-to-live: 30000
   jwt:
     secret: ${JWT_SECRET}
+    expiration: ${JWT_EXPIRATION:3600000}
     roles:
       admin: ADMIN_TRACKING
       user: USER_TRACKING

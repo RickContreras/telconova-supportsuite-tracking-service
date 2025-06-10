@@ -34,37 +34,43 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull HttpServletResponse response, @NonNull FilterChain filterChain)
             throws ServletException, IOException {
         try {
-            String jwt = parseJwt(request);
-            if (jwt != null && jwtUtils.validateToken(jwt)) {
+            String jwt = getJwtFromRequest(request);
+
+            if (StringUtils.hasText(jwt) && jwtUtils.validateToken(jwt)) {
                 String username = jwtUtils.getUsernameFromToken(jwt);
                 List<String> roles = jwtUtils.getRolesFromToken(jwt);
 
-                // Configurar los roles directamente como autoridades sin el prefijo ROLE_
-                List<SimpleGrantedAuthority> authorities = roles.stream()
-                        .map(SimpleGrantedAuthority::new).collect(Collectors.toList());
+                if (username != null && roles != null) {
+                    // Mapear roles y añadir prefijo ROLE_ si no lo tienen
+                    List<SimpleGrantedAuthority> authorities = roles.stream().map(role -> {
+                        if (!role.startsWith("ROLE_")) {
+                            return new SimpleGrantedAuthority("ROLE_" + role);
+                        } else {
+                            return new SimpleGrantedAuthority(role);
+                        }
+                    }).collect(Collectors.toList());
 
-                UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(username, null, authorities);
-                authentication
-                        .setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    UsernamePasswordAuthenticationToken authentication =
+                            new UsernamePasswordAuthenticationToken(username, null, authorities);
+                    authentication
+                            .setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-                logger.info("Usuario autenticado: {} con roles: {}", username, roles);
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                    logger.info("Usuario autenticado: {} con roles: {}", username, roles);
+                }
             }
         } catch (Exception e) {
-            logger.error("No se pudo establecer la autenticación del usuario: {}", e.getMessage());
+            logger.error("Error en la autenticación JWT: {}", e.getMessage());
         }
 
         filterChain.doFilter(request, response);
     }
 
-    private String parseJwt(HttpServletRequest request) {
-        String headerAuth = request.getHeader("Authorization");
-
-        if (StringUtils.hasText(headerAuth) && headerAuth.startsWith("Bearer ")) {
-            return headerAuth.substring(7);
+    private String getJwtFromRequest(HttpServletRequest request) {
+        String bearerToken = request.getHeader("Authorization");
+        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7);
         }
-
         return null;
     }
 }

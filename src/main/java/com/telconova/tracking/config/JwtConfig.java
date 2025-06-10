@@ -10,4 +10,7 @@ public class JwtConfig {
     // Debe ser la misma clave secreta que usa el servicio de autenticación
     @Value("${app.jwt.secret}")
     private String secret;
+
+    @Value("${app.jwt.expiration:3600000}")
+    private long expiration;
 }

@@ -2,14 +2,12 @@ package com.telconova.tracking.security;
 
 import com.telconova.tracking.config.JwtConfig;
 import io.jsonwebtoken.*;
-import io.jsonwebtoken.io.Decoders;
-import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import java.security.Key;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @Component
@@ -23,21 +21,27 @@ public class JwtUtils {
     }
 
     public String getUsernameFromToken(String token) {
-        return Jwts.parserBuilder().setSigningKey(getSigningKey()).build().parseClaimsJws(token)
-                .getBody().getSubject();
+        Claims claims = parseJwt(token);
+        return claims.getSubject();
     }
 
     @SuppressWarnings("unchecked")
     public List<String> getRolesFromToken(String token) {
-        Claims claims = Jwts.parserBuilder().setSigningKey(getSigningKey()).build()
-                .parseClaimsJws(token).getBody();
-
+        Claims claims = parseJwt(token);
         return (List<String>) claims.get("roles");
+    }
+
+    public Claims parseJwt(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(jwtConfig.getSecret().getBytes(StandardCharsets.UTF_8)).build()
+                .parseClaimsJws(token).getBody();
     }
 
     public boolean validateToken(String token) {
         try {
-            Jwts.parserBuilder().setSigningKey(getSigningKey()).build().parseClaimsJws(token);
+            Jwts.parserBuilder()
+                    .setSigningKey(jwtConfig.getSecret().getBytes(StandardCharsets.UTF_8)).build()
+                    .parseClaimsJws(token);
             return true;
         } catch (SignatureException e) {
             logger.error("Firma JWT inválida: {}", e.getMessage());
@@ -51,10 +55,5 @@ public class JwtUtils {
             logger.error("JWT claims string está vacío: {}", e.getMessage());
         }
         return false;
-    }
-
-    private Key getSigningKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(jwtConfig.getSecret());
-        return Keys.hmacShaKeyFor(keyBytes);
     }
 }
