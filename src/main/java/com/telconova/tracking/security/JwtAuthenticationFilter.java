@@ -39,6 +39,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 String username = jwtUtils.getUsernameFromToken(jwt);
                 List<String> roles = jwtUtils.getRolesFromToken(jwt);
 
+                // Configurar los roles directamente como autoridades sin el prefijo ROLE_
                 List<SimpleGrantedAuthority> authorities = roles.stream()
                         .map(SimpleGrantedAuthority::new).collect(Collectors.toList());
 
@@ -48,6 +49,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         .setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
                 SecurityContextHolder.getContext().setAuthentication(authentication);
+                logger.info("Usuario autenticado: {} con roles: {}", username, roles);
             }
         } catch (Exception e) {
             logger.error("No se pudo establecer la autenticación del usuario: {}", e.getMessage());
