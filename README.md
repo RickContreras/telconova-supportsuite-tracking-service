@@ -60,6 +60,18 @@ mvn clean install
 mvn spring-boot:run
 ```
 
+## Seguridad
+
+Este microservicio implementa autenticación JWT para proteger los endpoints. Los tokens son validados contra una clave secreta compartida con el microservicio de autenticación.
+
+Para más detalles, consulte la [documentación de seguridad](docs/seguridad.md).
+
+### Configuración de Seguridad
+
+1. Asegúrese de definir la variable de entorno `JWT_SECRET` con el mismo valor que en el microservicio de autenticación.
+2. Los endpoints están protegidos según los roles: `TECNICO`, `SUPERVISOR` y `ADMIN`.
+
+
 ## 📚 Recursos Adicionales
 
 * [Spring WebFlux Reference](https://docs.spring.io/spring-framework/docs/current/reference/html/web-reactive.html)
