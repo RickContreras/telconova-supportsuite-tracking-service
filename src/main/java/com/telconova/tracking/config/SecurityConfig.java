@@ -2,62 +2,53 @@ package com.telconova.tracking.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.env.Environment;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import com.telconova.tracking.security.JwtAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class SecurityConfig {
 
-        private final Environment env;
+        private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-        public SecurityConfig(Environment env) {
-                this.env = env;
+        public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
+                this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         }
 
         @Bean
         public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-                http.csrf(csrf -> csrf.disable()).authorizeHttpRequests(authorize -> authorize
-                                // Endpoints públicos
-                                .requestMatchers("/actuator/health", "/actuator/health/liveness",
-                                                "/actuator/health/readiness")
-                                .permitAll()
-                                .requestMatchers("/", "/swagger-ui/**", "/swagger-ui.html",
-                                                "/api-docs/**")
-                                .permitAll()
-                                // Endpoints que requieren autenticación
-                                .requestMatchers("/actuator/**").hasRole("ADMIN")
-                                .requestMatchers("/api/**").authenticated().anyRequest()
-                                .authenticated())
-                                .httpBasic(org.springframework.security.config.Customizer
-                                                .withDefaults()); // Habilitar autenticación HTTP
-                                                                  // Basic
+                http.csrf(csrf -> csrf.disable())
+                                .sessionManagement(session -> session.sessionCreationPolicy(
+                                                SessionCreationPolicy.STATELESS))
+                                .authorizeHttpRequests(authorize -> authorize
+                                                // Endpoints públicos
+                                                .requestMatchers("/actuator/health",
+                                                                "/actuator/health/liveness",
+                                                                "/actuator/health/readiness")
+                                                .permitAll()
+                                                .requestMatchers("/", "/swagger-ui/**",
+                                                                "/swagger-ui.html", "/api-docs/**")
+                                                .permitAll()
+                                                // Endpoints que requieren roles específicos
+                                                .requestMatchers("/actuator/**").hasRole("ADMIN")
+                                                .requestMatchers("/api/v1/avances")
+                                                .hasAnyAuthority("TECNICO", "SUPERVISOR", "ADMIN")
+                                                .requestMatchers("/api/v1/avances/*/editar-tiempo")
+                                                .hasAuthority("TECNICO").anyRequest()
+                                                .authenticated());
+
+                // Agregar filtro JWT antes del filtro de autenticación estándar
+                http.addFilterBefore(jwtAuthenticationFilter,
+                                UsernamePasswordAuthenticationFilter.class);
 
                 return http.build();
         }
 
-        @Bean
-        public InMemoryUserDetailsManager userDetailsService() {
-                String username = env.getProperty("spring.security.user.name", "admin");
-                String password = env.getProperty("spring.security.user.password", "admin");
-                String roles = env.getProperty("spring.security.user.roles", "ADMIN");
-
-                UserDetails user = User.builder().username(username)
-                                .password(passwordEncoder().encode(password))
-                                .roles(roles.split(",")).build();
-
-                return new InMemoryUserDetailsManager(user);
-        }
-
-        @Bean
-        public PasswordEncoder passwordEncoder() {
-                return new BCryptPasswordEncoder();
-        }
 }
