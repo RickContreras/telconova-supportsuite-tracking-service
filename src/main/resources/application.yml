@@ -229,3 +229,6 @@ springdoc:
     doc-expansion: none
   show-actuator: true
   packages-to-scan: com.telconova.tracking.controller
+
+swagger:
+  production-server-url: ${SWAGGER_PRODUCTION_SERVER_URL:localhost:8080}
