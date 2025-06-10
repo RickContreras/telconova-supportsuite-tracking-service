@@ -1,5 +1,7 @@
 package com.telconova.tracking.config;
 
+import com.telconova.tracking.security.SecurityExceptionHandler;
+import com.telconova.tracking.security.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -10,17 +12,18 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import com.telconova.tracking.security.JwtAuthenticationFilter;
-
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
 
         private final JwtAuthenticationFilter jwtAuthenticationFilter;
+        private final SecurityExceptionHandler securityExceptionHandler;
 
-        public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
+        public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter,
+                        SecurityExceptionHandler securityExceptionHandler) {
                 this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+                this.securityExceptionHandler = securityExceptionHandler;
         }
 
         @Bean
@@ -47,7 +50,10 @@ public class SecurityConfig {
                                                 .hasRole("ADMIN")
                                                 .requestMatchers("/api/v1/avances/*/evidencias")
                                                 .hasAnyRole("TECNICO", "SUPERVISOR").anyRequest()
-                                                .authenticated());
+                                                .authenticated())
+                                .exceptionHandling(exceptions -> exceptions
+                                                .authenticationEntryPoint(securityExceptionHandler)
+                                                .accessDeniedHandler(securityExceptionHandler));
 
                 // Agregar filtro JWT
                 http.addFilterBefore(jwtAuthenticationFilter,
