@@ -30,17 +30,17 @@ class AvanceServiceImplTest {
 
     private Avance avance;
     private UUID avanceId;
-    private UUID ordenId;
+    private Long ordenId;
 
     @BeforeEach
     void setUp() {
         avanceId = UUID.randomUUID();
-        ordenId = UUID.randomUUID();
+        ordenId = 456L;
 
         avance = new Avance();
         avance.setId(avanceId);
         avance.setOrdenId(ordenId);
-        avance.setTecnicoId(UUID.randomUUID());
+        avance.setTecnicoId(123L);
         avance.setComentario("Prueba de servicio");
         avance.setTiempoInvertido(30);
     }

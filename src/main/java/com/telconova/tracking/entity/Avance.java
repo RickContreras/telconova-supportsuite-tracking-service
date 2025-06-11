@@ -15,10 +15,10 @@ public class Avance {
     private UUID id;
 
     @Column(name = "orden_id", nullable = false)
-    private UUID ordenId;
+    private Long ordenId;
 
     @Column(name = "tecnico_id", nullable = false)
-    private UUID tecnicoId;
+    private Long tecnicoId;
 
     @Column(nullable = false)
     private String comentario;

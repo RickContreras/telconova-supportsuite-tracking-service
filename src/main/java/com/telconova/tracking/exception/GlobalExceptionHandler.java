@@ -6,9 +6,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.NonNull;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authorization.AuthorizationDeniedException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
@@ -16,6 +20,8 @@ import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
@@ -32,6 +38,30 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 error.setPath(request.getDescription(false).replace("uri=", ""));
 
                 return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
+        }
+
+        // Reemplazar el método anotado con @ExceptionHandler por un método que sobreescriba el de
+        // la clase padre
+        @Override
+        protected ResponseEntity<Object> handleMethodArgumentNotValid(
+                        @NonNull MethodArgumentNotValidException ex, @NonNull HttpHeaders headers,
+                        @NonNull HttpStatusCode status, @NonNull WebRequest request) {
+
+                logger.error("Error de validación: {}", ex.getMessage());
+
+                Map<String, String> errors = new HashMap<>();
+                ex.getBindingResult().getAllErrors().forEach(error -> {
+                        String fieldName = ((FieldError) error).getField();
+                        String errorMessage = error.getDefaultMessage();
+                        errors.put(fieldName, errorMessage);
+                });
+
+                ErrorResponse error = new ErrorResponse(HttpStatus.BAD_REQUEST.value(),
+                                "Error de validación", LocalDateTime.now());
+                error.setErrors(errors);
+                error.setPath(request.getDescription(false).replace("uri=", ""));
+
+                return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
         }
 
         @ExceptionHandler(AuthorizationDeniedException.class)
@@ -74,10 +104,10 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
         }
 
-
+        @Override
         protected ResponseEntity<Object> handleMaxUploadSizeExceededException(
-                        MaxUploadSizeExceededException ex, HttpHeaders headers, HttpStatus status,
-                        WebRequest request) {
+                        @NonNull MaxUploadSizeExceededException ex, @NonNull HttpHeaders headers,
+                        @NonNull HttpStatusCode status, @NonNull WebRequest request) {
 
                 logger.warn("Tamaño de archivo excedido: {}", ex.getMessage());
 
@@ -98,6 +128,15 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                                 ex.getMessage(), LocalDateTime.now());
                 error.setPath(request.getDescription(false).replace("uri=", ""));
 
+                return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+        }
+
+        @ExceptionHandler(IllegalArgumentException.class)
+        public ResponseEntity<ErrorResponse> handleIllegalArgumentException(
+                        IllegalArgumentException ex) {
+                logger.error("Argumento inválido: {}", ex.getMessage());
+                ErrorResponse error = new ErrorResponse(HttpStatus.BAD_REQUEST.value(),
+                                ex.getMessage(), LocalDateTime.now());
                 return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
         }
 

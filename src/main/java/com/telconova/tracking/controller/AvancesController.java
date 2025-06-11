@@ -1,39 +1,39 @@
 package com.telconova.tracking.controller;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.http.HttpStatus;
 import com.telconova.tracking.dto.AvanceDto;
 import com.telconova.tracking.entity.Avance;
-import com.telconova.tracking.service.AvanceService;
 import com.telconova.tracking.mapper.AvanceMapper;
-import com.telconova.tracking.event.publisher.AvanceEventPublisher;
-import com.telconova.tracking.security.JwtService;
-import lombok.RequiredArgsConstructor;
-import jakarta.validation.Valid;
+import com.telconova.tracking.service.AvanceService;
+import com.telconova.tracking.config.SecurityAuditLogger;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.*;
 
 @RestController
 @RequestMapping("/api/v1/avances")
 @Tag(name = "Avances", description = "API para gestión de avances técnicos")
+@RequiredArgsConstructor
 public class AvancesController {
+
+        private static final Logger logger = LoggerFactory.getLogger(AvancesController.class);
+        private final AvanceService avanceService;
+        private final AvanceMapper avanceMapper;
+        private final SecurityAuditLogger securityAuditLogger;
+
+        // TODO: Implementar bus de eventos
+        // private final AvanceEventPublisher avanceEventPublisher;
 
         @Operation(summary = "Obtener todos los avances",
                         description = "Retorna un mensaje de confirmación que el endpoint está funcionando")
@@ -42,8 +42,10 @@ public class AvancesController {
                                         description = "Error interno del servidor")})
         // Accesible por todos los roles (TECNICO, SUPERVISOR, ADMIN)
         @GetMapping
-        public Map<String, String> getAvances() {
-                return Collections.singletonMap("message", "Lista de avances");
+        public ResponseEntity<List<AvanceDto>> getAvances() {
+                logger.debug("Solicitando todos los avances");
+                List<Avance> avances = avanceService.findAll();
+                return ResponseEntity.ok(avanceMapper.toDto(avances));
         }
 
         @Operation(summary = "Obtener avances por orden",
@@ -53,8 +55,10 @@ public class AvancesController {
                         @ApiResponse(responseCode = "500",
                                         description = "Error interno del servidor")})
         @GetMapping("/orden/{orderId}")
-        public ResponseEntity<Map<String, Object>> getAvancesByOrden(@PathVariable UUID orderId) {
-                return ResponseEntity.ok(Collections.singletonMap("orderId", orderId.toString()));
+        public ResponseEntity<List<AvanceDto>> getAvancesByOrden(@PathVariable Long orderId) {
+                logger.debug("Solicitando avances para la orden: {}", orderId);
+                List<Avance> avances = avanceService.findByOrdenId(orderId);
+                return ResponseEntity.ok(avanceMapper.toDto(avances));
         }
 
         // ENDPOINT ESPECÍFICO PARA TÉCNICO
@@ -70,14 +74,51 @@ public class AvancesController {
                                         description = "Error interno del servidor")})
         @PostMapping
         @PreAuthorize("hasRole('TECNICO')")
-        public ResponseEntity<Map<String, Object>> createAvance(
-                        @RequestBody Map<String, Object> avanceData) {
-                Map<String, Object> response = new HashMap<>();
-                response.put("id", UUID.randomUUID().toString());
-                response.put("message", "Avance creado correctamente");
-                response.put("data", avanceData);
+        public ResponseEntity<AvanceDto> createAvance(@Valid @RequestBody AvanceDto avanceDto) {
+                logger.debug("Recibida solicitud para crear avance: {}", avanceDto);
 
-                return ResponseEntity.status(HttpStatus.CREATED).body(response);
+                // Validar datos del avance
+                validateAvanceData(avanceDto);
+
+                // Convertir DTO a entidad y guardar
+                Avance avance = avanceMapper.toEntity(avanceDto);
+                Avance savedAvance = avanceService.save(avance);
+
+                // Registrar acción
+                securityAuditLogger.logSensitiveAction("CREAR_AVANCE",
+                                savedAvance.getId().toString());
+
+                // TODO: Implementar bus de eventos
+                // Aquí se publicaría el evento de avance registrado
+                // Aquí se publicaría el evento de avance registrado
+                // avanceEventPublisher.publishAvanceRegistrado(savedAvance);
+
+                // Devolver respuesta
+                AvanceDto responseDto = avanceMapper.toDto(savedAvance);
+                return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
+        }
+
+        /**
+         * Valida los datos del avance según reglas de negocio
+         */
+        private void validateAvanceData(AvanceDto avanceDto) {
+                // Validar comentario (entre 20 y 500 caracteres)
+                if (avanceDto.getComentario() == null || avanceDto.getComentario().length() < 20
+                                || avanceDto.getComentario().length() > 500) {
+                        throw new IllegalArgumentException(
+                                        "El comentario debe tener entre 20 y 500 caracteres");
+                }
+
+                // Validar tiempo invertido (debe ser positivo)
+                if (avanceDto.getTiempoInvertido() == null || avanceDto.getTiempoInvertido() <= 0) {
+                        throw new IllegalArgumentException(
+                                        "El tiempo invertido debe ser un valor positivo");
+                }
+
+                // Validar que exista un ID de orden
+                if (avanceDto.getOrdenId() == null) {
+                        throw new IllegalArgumentException("Se debe especificar el ID de la orden");
+                }
         }
 
         // ENDPOINT PARA EDITAR TIEMPO (SOLO TÉCNICOS)

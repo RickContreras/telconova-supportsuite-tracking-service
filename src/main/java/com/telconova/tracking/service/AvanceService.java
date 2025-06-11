@@ -9,7 +9,9 @@ import java.util.UUID;
 public interface AvanceService {
     Avance save(Avance avance);
 
-    List<Avance> findByOrdenId(UUID ordenId);
+    List<Avance> findByOrdenId(Long ordenId);
+
+    List<Avance> findAll();
 
     Optional<Avance> findById(UUID id);
 

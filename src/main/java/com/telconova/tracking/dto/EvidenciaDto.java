@@ -13,5 +13,5 @@ public class EvidenciaDto {
     private String tipoContenido;
     private Long tamanoBytes;
     private LocalDateTime creadoEn;
-    private String url; // URL para acceder al archivo
+    private String url;
 }

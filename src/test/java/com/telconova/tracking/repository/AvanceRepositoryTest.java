@@ -12,7 +12,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 
 import java.util.List;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -29,16 +28,16 @@ public class AvanceRepositoryTest {
     @Test
     void shouldFindAvancesByOrdenId() {
         // Arrange
-        UUID ordenId = UUID.randomUUID();
+        Long ordenId = 12345L;
         Avance avance1 = new Avance();
         avance1.setOrdenId(ordenId);
-        avance1.setTecnicoId(UUID.randomUUID());
+        avance1.setTecnicoId(1L);
         avance1.setComentario("Test comentario 1");
         avance1.setTiempoInvertido(30);
 
         Avance avance2 = new Avance();
         avance2.setOrdenId(ordenId);
-        avance2.setTecnicoId(UUID.randomUUID());
+        avance2.setTecnicoId(2L);
         avance2.setComentario("Test comentario 2");
         avance2.setTiempoInvertido(45);
 

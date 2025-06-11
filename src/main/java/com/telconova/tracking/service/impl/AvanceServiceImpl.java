@@ -24,8 +24,14 @@ public class AvanceServiceImpl implements AvanceService {
 
     @Override
     @Cacheable(value = "avances", key = "'ordenId_' + #ordenId")
-    public List<Avance> findByOrdenId(UUID ordenId) {
+    public List<Avance> findByOrdenId(Long ordenId) {
         return avanceRepository.findByOrdenIdOrderByCreadoEnDesc(ordenId);
+    }
+
+    @Override
+    @Cacheable(value = "avances", key = "'all'")
+    public List<Avance> findAll() {
+        return avanceRepository.findAll();
     }
 
     @Override

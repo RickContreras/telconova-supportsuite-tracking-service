@@ -16,5 +16,6 @@ public interface EvidenciaMapper {
 
     List<EvidenciaDto> toDto(List<Evidencia> entities);
 
+    @Mapping(target = "rutaArchivo", ignore = true)
     Evidencia toEntity(EvidenciaDto dto);
 }

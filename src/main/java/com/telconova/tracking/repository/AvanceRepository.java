@@ -9,5 +9,5 @@ import java.util.UUID;
 
 @Repository
 public interface AvanceRepository extends JpaRepository<Avance, UUID> {
-    List<Avance> findByOrdenIdOrderByCreadoEnDesc(UUID ordenId);
+    List<Avance> findByOrdenIdOrderByCreadoEnDesc(Long ordenId);
 }

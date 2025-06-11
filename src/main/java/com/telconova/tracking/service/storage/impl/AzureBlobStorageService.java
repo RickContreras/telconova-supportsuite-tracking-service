@@ -25,10 +25,10 @@ public class AzureBlobStorageService implements StorageService {
 
     private static final Logger logger = LoggerFactory.getLogger(AzureBlobStorageService.class);
     private final BlobContainerClient containerClient;
-    private final StorageProperties storageProperties;
+    // private final StorageProperties storageProperties;
 
     public AzureBlobStorageService(StorageProperties storageProperties) {
-        this.storageProperties = storageProperties;
+        // this.storageProperties = storageProperties;
 
         logger.info("Inicializando Azure Blob Storage con contenedor: {}",
                 storageProperties.getAzure().getContainerName());
