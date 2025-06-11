@@ -13,8 +13,8 @@
 ```json
 {
   "avanceId": "uuid-del-avance",
-  "ordenId": "uuid-de-la-orden",
-  "tecnicoId": "uuid-del-tecnico",
+  "ordenId": "id-de-la-orden",
+  "tecnicoId": "id-del-tecnico",
   "comentario": "Texto del avance",
   "tiempoInvertido": 45,
   "timestamp": "2025-06-01T14:30:00Z"
