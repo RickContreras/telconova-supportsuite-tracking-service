@@ -119,6 +119,13 @@
 			<artifactId>postgresql</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+				<groupId>org.mockito</groupId>
+				<artifactId>mockito-core</artifactId>
+				<version>4.11.0</version>
+				<scope>test</scope>
+		</dependency>
+	
 
 		<!-- Actuator -->
 		<dependency>
@@ -137,6 +144,12 @@
 			<groupId>com.azure</groupId>
 			<artifactId>azure-storage-blob</artifactId>
 			<version>12.22.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.azure</groupId>
+			<artifactId>azure-identity</artifactId>
+			<version>1.9.0</version>
 		</dependency>
 
 		<!-- JWT Authentication -->
@@ -209,6 +222,12 @@
 						<path>
 							<groupId>org.projectlombok</groupId>
 							<artifactId>lombok</artifactId>
+							<version>${lombok.version}</version>
+						</path>
+						<path>
+							<groupId>org.mapstruct</groupId>
+							<artifactId>mapstruct-processor</artifactId>
+							<version>1.5.5.Final</version>
 						</path>
 					</annotationProcessorPaths>
 				</configuration>
