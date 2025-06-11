@@ -5,8 +5,8 @@
 | Campo             | Tipo       | Descripción                          |
 |------------------|------------|--------------------------------------|
 | `id`              | UUID       | ID del avance                        |
-| `orden_id`        | UUID       | FK a la orden                        |
-| `tecnico_id`      | UUID       | Usuario que registró el avance       |
+| `orden_id`        | BIGINT     | FK a la orden                        |
+| `tecnico_id`      | BIGINT     | Usuario que registró el avance       |
 | `comentario`      | TEXT       | Texto del avance (20–500 caracteres) |
 | `tiempo_invertido`| INTEGER    | Minutos invertidos                   |
 | `creado_en`       | TIMESTAMP  | Fecha de creación                    |
