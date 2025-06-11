@@ -27,7 +27,7 @@ Registra un nuevo avance técnico asociado a una orden.
   "id": "uuid-del-avance",
   "comentario": "Descripción del avance realizado",
   "tiempoInvertido": 45,
-  "tecnicoId": "uuid-del-tecnico",
+  "tecnicoId": "id del tecnico",
   "creadoEn": "2025-06-01T14:30:00Z"
 }
 ```
