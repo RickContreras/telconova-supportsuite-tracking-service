@@ -19,9 +19,9 @@
 {
   "tipo": "AVANCE_CREADO",
   "avanceId": "uuid-del-avance",
-  "ordenId": "uuid-de-la-orden",
+  "ordenId": "id-de-la-orden",
   "comentario": "Texto del avance",
-  "tecnicoId": "uuid-del-tecnico",
+  "tecnicoId": "id-del-tecnico",
   "tecnicoNombre": "Nombre del técnico",
   "tiempoInvertido": 45,
   "timestamp": "2025-06-01T14:30:00Z"
@@ -34,7 +34,7 @@
 {
   "tipo": "TIEMPO_MODIFICADO",
   "avanceId": "uuid-del-avance",
-  "ordenId": "uuid-de-la-orden",
+  "ordenId": "id-de-la-orden",
   "tiempoAnterior": 30,
   "tiempoNuevo": 45,
   "justificacion": "Texto de justificación",
