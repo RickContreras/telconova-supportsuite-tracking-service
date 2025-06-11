@@ -1,21 +1,24 @@
 package com.telconova.tracking.dto;
 
-import java.time.LocalDateTime;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
 
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class ErrorResponse {
-    private LocalDateTime timestamp;
     private int status;
-    private String error;
     private String message;
+    private LocalDateTime timestamp;
+    private String error;
     private String path;
 
-    public ErrorResponse(int status, String error, String message, String path) {
-        this.timestamp = LocalDateTime.now();
-        this.status = status;
-        this.error = error;
-        this.message = message;
-        this.path = path;
+    public ErrorResponse(int value, String message2, LocalDateTime now) {
+        this.status = value;
+        this.message = message2;
+        this.timestamp = now;
     }
 }

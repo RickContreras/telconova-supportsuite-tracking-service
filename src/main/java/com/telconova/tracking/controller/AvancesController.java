@@ -16,6 +16,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.http.HttpStatus;
+import com.telconova.tracking.dto.AvanceDto;
+import com.telconova.tracking.entity.Avance;
+import com.telconova.tracking.service.AvanceService;
+import com.telconova.tracking.mapper.AvanceMapper;
+import com.telconova.tracking.event.publisher.AvanceEventPublisher;
+import com.telconova.tracking.security.JwtService;
+import lombok.RequiredArgsConstructor;
+import jakarta.validation.Valid;
 
 import java.util.Collections;
 import java.util.HashMap;

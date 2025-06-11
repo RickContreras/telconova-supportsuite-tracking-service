@@ -2,7 +2,12 @@ server:
   port: ${PORT:8080}
   http2:
     enabled: true
-spring:
+
+ryuk:
+  container:
+    privileged: true
+
+spring:  
   application:
     name: tracking-service
   profiles:
@@ -195,7 +200,7 @@ app:
       admin: ADMIN_TRACKING
       user: USER_TRACKING
   storage:
-    type: ${STORAGE_TYPE:local} # local, azure, s3, minio
+    type: ${STORAGE_TYPE:azure} # local, azure, s3, minio
     local:
       location: ${STORAGE_LOCAL_PATH:uploads}
     azure:
