@@ -1,8 +1,8 @@
 package com.telconova.tracking.service.impl;
 
 import com.telconova.tracking.dto.EvidenciaDto;
-// import com.telconova.tracking.entity.Avance;
 import com.telconova.tracking.entity.Evidencia;
+import com.telconova.tracking.exception.AccessDeniedException;
 import com.telconova.tracking.exception.InvalidFileException;
 import com.telconova.tracking.exception.ResourceNotFoundException;
 import com.telconova.tracking.mapper.EvidenciaMapper;
@@ -36,7 +36,7 @@ public class EvidenciaServiceImpl implements EvidenciaService {
     private static final List<String> ALLOWED_CONTENT_TYPES =
             Arrays.asList("image/jpeg", "image/png", "image/gif", "application/pdf", "text/plain");
     private static final long MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
-    private static final int MAX_FILES_PER_AVANCE = 5;
+    private static final int MAX_FILES_PER_AVANCE = 3;
 
     private final EvidenciaRepository evidenciaRepository;
     private final AvanceRepository avanceRepository;
@@ -104,7 +104,12 @@ public class EvidenciaServiceImpl implements EvidenciaService {
 
             // Convertir a DTO y devolver
             logger.info("Evidencia subida correctamente para avance: {}", avanceId);
-            return evidenciaMapper.toDto(evidencia);
+            EvidenciaDto dto = evidenciaMapper.toDto(evidencia);
+
+            // Enriquecer con URL
+            dto.setUrl(storageService.getUrl(evidencia.getRutaArchivo()));
+
+            return dto;
         } finally {
             // Registrar tiempo de procesamiento
             Duration duration = Duration.between(start, Instant.now());
@@ -145,7 +150,14 @@ public class EvidenciaServiceImpl implements EvidenciaService {
     public List<EvidenciaDto> findByAvanceId(UUID avanceId) {
         logger.debug("Buscando evidencias para avance: {}", avanceId);
         List<Evidencia> evidencias = evidenciaRepository.findByAvanceId(avanceId);
-        return evidenciaMapper.toDto(evidencias);
+        List<EvidenciaDto> dtos = evidenciaMapper.toDto(evidencias);
+
+        // Enriquecer cada DTO con URL
+        for (int i = 0; i < dtos.size(); i++) {
+            dtos.get(i).setUrl(storageService.getUrl(evidencias.get(i).getRutaArchivo()));
+        }
+
+        return dtos;
     }
 
     @Override
@@ -162,19 +174,30 @@ public class EvidenciaServiceImpl implements EvidenciaService {
 
     @Override
     @Transactional
-    public void deleteById(UUID id) throws ResourceNotFoundException {
+    public void deleteById(UUID id) throws ResourceNotFoundException, AccessDeniedException {
         logger.debug("Eliminando evidencia por ID: {}", id);
 
         Evidencia evidencia = evidenciaRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Evidencia", "id", id));
 
-        // Eliminar archivo del almacenamiento
-        storageService.delete(evidencia.getRutaArchivo());
+        // Verificar si el avance existe
+        if (!avanceRepository.existsById(evidencia.getAvanceId())) {
+            throw new ResourceNotFoundException("Avance", "id", evidencia.getAvanceId());
+        }
 
-        // Eliminar registro de base de datos
-        evidenciaRepository.delete(evidencia);
 
-        logger.info("Evidencia eliminada correctamente: {}", id);
+        try {
+            // Eliminar archivo del almacenamiento
+            storageService.delete(evidencia.getRutaArchivo());
+
+            // Eliminar registro de base de datos
+            evidenciaRepository.delete(evidencia);
+
+            logger.info("Evidencia eliminada correctamente: {}", id);
+        } catch (Exception e) {
+            logger.error("Error al eliminar evidencia: {}", id, e);
+            throw new RuntimeException("No se pudo eliminar la evidencia: " + e.getMessage(), e);
+        }
     }
 
     /**

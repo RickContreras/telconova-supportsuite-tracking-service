@@ -13,5 +13,11 @@ public interface StorageService {
 
     void delete(String filename);
 
-    String getUrl(String filename);
+    /**
+     * Obtiene la URL para acceder al archivo
+     * 
+     * @param filePath Ruta de almacenamiento del archivo
+     * @return URL para acceder al archivo
+     */
+    String getUrl(String filePath);
 }
