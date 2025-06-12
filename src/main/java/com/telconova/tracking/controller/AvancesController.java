@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,6 +20,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+import org.springframework.security.core.Authentication;
 import java.util.*;
 
 @RestController
@@ -189,6 +192,52 @@ public class AvancesController {
                 datos.put("avancesCompletados", 120);
                 datos.put("avancesPendientes", 30);
                 response.put("datos", datos);
+
+                return ResponseEntity.ok(response);
+        }
+
+        @Operation(summary = "Editar comentario de avance",
+                        description = "Permite a un técnico editar el comentario de un avance que haya creado")
+        @ApiResponses({@ApiResponse(responseCode = "200",
+                        description = "Comentario actualizado correctamente"),
+                        @ApiResponse(responseCode = "400", description = "Datos inválidos"),
+                        @ApiResponse(responseCode = "403",
+                                        description = "No tiene permisos para editar este comentario"),
+                        @ApiResponse(responseCode = "404", description = "Avance no encontrado")})
+        @PutMapping("/{avanceId}/comentario")
+        @PreAuthorize("hasRole('TECNICO')")
+        public ResponseEntity<Map<String, Object>> editarComentario(@PathVariable UUID avanceId,
+                        @RequestParam @Size(min = 20, max = 500,
+                                        message = "El comentario debe tener entre 20 y 500 caracteres") String comentario,
+                        Authentication authentication) {
+
+
+
+                // Buscar el avance
+                Avance avance = avanceService.findById(avanceId)
+                                .orElseThrow(() -> new RuntimeException(
+                                                "Avance no encontrado con ID: " + avanceId));
+
+
+
+                // Validar el comentario
+                if (comentario == null || comentario.trim().length() < 20
+                                || comentario.length() > 500) {
+                        throw new IllegalArgumentException(
+                                        "El comentario debe tener entre 20 y 500 caracteres");
+                }
+
+                // Actualizar el comentario
+                avance.setComentario(comentario);
+                avance.setModificadoEn(LocalDateTime.now());
+                Avance avanceActualizado = avanceService.save(avance);
+
+                // Preparar respuesta
+                Map<String, Object> response = new HashMap<>();
+                response.put("avanceId", avanceId.toString());
+                response.put("mensaje", "Comentario actualizado correctamente");
+                response.put("comentario", avanceActualizado.getComentario());
+                response.put("fechaModificacion", avanceActualizado.getModificadoEn());
 
                 return ResponseEntity.ok(response);
         }
