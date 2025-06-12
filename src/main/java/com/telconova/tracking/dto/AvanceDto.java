@@ -17,6 +17,7 @@ public class AvanceDto {
     @NotNull(message = "El ID de la orden es obligatorio")
     private Long ordenId;
 
+    @NotNull(message = "El ID del técnico es obligatorio")
     private Long tecnicoId;
 
     @NotNull(message = "El comentario es obligatorio")
