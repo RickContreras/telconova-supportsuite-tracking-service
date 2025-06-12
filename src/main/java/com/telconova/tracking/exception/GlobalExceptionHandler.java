@@ -132,12 +132,15 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         }
 
         @ExceptionHandler(IllegalArgumentException.class)
-        public ResponseEntity<ErrorResponse> handleIllegalArgumentException(
-                        IllegalArgumentException ex) {
-                logger.error("Argumento inválido: {}", ex.getMessage());
-                ErrorResponse error = new ErrorResponse(HttpStatus.BAD_REQUEST.value(),
-                                ex.getMessage(), LocalDateTime.now());
-                return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+        protected ResponseEntity<ErrorResponse> handleIllegalArgument(IllegalArgumentException ex,
+                        WebRequest request) {
+
+                ErrorResponse errorResponse = new ErrorResponse();
+                errorResponse.setStatus(HttpStatus.BAD_REQUEST.value());
+                errorResponse.setMessage(ex.getMessage());
+                errorResponse.setTimestamp(LocalDateTime.now());
+
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
 
         @ExceptionHandler(Exception.class)

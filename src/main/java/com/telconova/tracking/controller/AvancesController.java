@@ -1,7 +1,9 @@
 package com.telconova.tracking.controller;
 
 import com.telconova.tracking.dto.AvanceDto;
+import com.telconova.tracking.dto.EdicionTiempoRequest;
 import com.telconova.tracking.entity.Avance;
+import com.telconova.tracking.exception.ResourceNotFoundException;
 import com.telconova.tracking.mapper.AvanceMapper;
 import com.telconova.tracking.service.AvanceService;
 import com.telconova.tracking.config.SecurityAuditLogger;
@@ -124,9 +126,8 @@ public class AvancesController {
                 }
         }
 
-        // ENDPOINT PARA EDITAR TIEMPO (SOLO TÉCNICOS)
         @Operation(summary = "Editar tiempo de avance",
-                        description = "Permite a un técnico actualizar el tiempo de un avance")
+                        description = "Permite a un técnico actualizar el tiempo invertido en un avance con justificación obligatoria")
         @ApiResponses({@ApiResponse(responseCode = "200",
                         description = "Tiempo actualizado correctamente"),
                         @ApiResponse(responseCode = "400", description = "Datos inválidos"),
@@ -138,14 +139,51 @@ public class AvancesController {
         @PutMapping("/{avanceId}/editar-tiempo")
         @PreAuthorize("hasRole('TECNICO')")
         public ResponseEntity<Map<String, Object>> editarTiempo(@PathVariable UUID avanceId,
-                        @RequestBody Map<String, Object> tiempoData) {
+                        @RequestBody @Valid EdicionTiempoRequest request,
+                        Authentication authentication) {
 
-                Map<String, Object> response = new HashMap<>();
-                response.put("avanceId", avanceId.toString());
-                response.put("message", "Tiempo actualizado correctamente");
-                response.put("tiempoActualizado", tiempoData);
+                try {
+                        logger.info("Solicitud para editar tiempo en avance: {}", avanceId);
 
-                return ResponseEntity.ok(response);
+                        // Obtener información del usuario autenticado (para seguridad adicional)
+                        String username = authentication.getName();
+                        logger.debug("Usuario {} solicita editar tiempo del avance {}", username,
+                                        avanceId);
+                        // Llegar al servicio para buscar el avance
+                        Avance avance = avanceService.findById(avanceId)
+                                        .orElseThrow(() -> new ResourceNotFoundException(
+                                                        "Avance no encontrado con ID: "
+                                                                        + avanceId));
+                        // Editar tiempo a través del servicio
+                        Avance avanceActualizado = avanceService.editarTiempoInvertido(avanceId,
+                                        request.getTiempoNuevo(), request.getJustificacion());
+
+                        // Registrar acción de seguridad
+                        securityAuditLogger.logSensitiveAction("EDITAR_TIEMPO_AVANCE",
+                                        avanceId.toString());
+
+                        // Preparar respuesta
+                        Map<String, Object> response = new HashMap<>();
+                        response.put("avanceId", avanceId.toString());
+                        response.put("message", "Tiempo actualizado correctamente");
+                        response.put("tiempoAnterior", avance.getTiempoInvertido());
+                        response.put("tiempoNuevo", avanceActualizado.getTiempoInvertido());
+                        response.put("fechaModificacion", avanceActualizado.getModificadoEn());
+
+                        // TODO: Implementar bus de eventos
+                        // aquí se publicaría el evento de tiempo modificado
+
+                        return ResponseEntity.ok(response);
+                } catch (ResourceNotFoundException e) {
+                        logger.error("Avance no encontrado: {}", avanceId, e);
+                        throw e;
+                } catch (IllegalArgumentException e) {
+                        logger.error("Error en validación: {}", e.getMessage(), e);
+                        throw e;
+                } catch (Exception e) {
+                        logger.error("Error al editar tiempo de avance: {}", e.getMessage(), e);
+                        throw new RuntimeException("Error al procesar la solicitud", e);
+                }
         }
 
         // ENDPOINT ESPECÍFICO PARA ADMIN
