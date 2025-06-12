@@ -159,7 +159,7 @@ public class AvancesController {
                         @ApiResponse(responseCode = "500",
                                         description = "Error interno del servidor")})
         @DeleteMapping("/{avanceId}")
-        @PreAuthorize("hasRole('ADMIN')")
+        @PreAuthorize("hasAnyRole('TECNICO', 'ADMIN')")
         public ResponseEntity<Map<String, Object>> eliminarAvance(@PathVariable UUID avanceId) {
                 Map<String, Object> response = new HashMap<>();
                 response.put("avanceId", avanceId.toString());
@@ -240,5 +240,26 @@ public class AvancesController {
                 response.put("fechaModificacion", avanceActualizado.getModificadoEn());
 
                 return ResponseEntity.ok(response);
+        }
+
+        @Operation(summary = "Obtener avance por ID",
+                        description = "Retorna un avance específico según su identificador único")
+        @ApiResponses({@ApiResponse(responseCode = "200", description = "Avance encontrado"),
+                        @ApiResponse(responseCode = "404", description = "Avance no encontrado"),
+                        @ApiResponse(responseCode = "500",
+                                        description = "Error interno del servidor")})
+        @GetMapping("/{avanceId}")
+        @PreAuthorize("hasAnyRole('TECNICO', 'ADMIN', 'SUPERVISOR')")
+        public ResponseEntity<AvanceDto> getAvanceById(@PathVariable UUID avanceId) {
+                logger.debug("Solicitando avance con ID: {}", avanceId);
+
+                Optional<Avance> avanceOpt = avanceService.findById(avanceId);
+
+                if (avanceOpt.isPresent()) {
+                        return ResponseEntity.ok(avanceMapper.toDto(avanceOpt.get()));
+                } else {
+                        logger.warn("Avance no encontrado con ID: {}", avanceId);
+                        return ResponseEntity.notFound().build();
+                }
         }
 }
