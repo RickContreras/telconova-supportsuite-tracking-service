@@ -1,0 +1,33 @@
+name: Deploy to Render
+
+on:
+  workflow_run:
+    workflows: ["Build and Push Docker Image"]
+    branches: [main]
+    types:
+      - completed
+  workflow_dispatch:
+
+jobs:
+  deploy-to-render:
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: ${{ vars.RENDER_APP_URL }}
+    steps:
+      - name: Desplegar a Render
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+          RENDER_SERVICE_ID: ${{ secrets.RENDER_SERVICE_ID }}
+        run: |
+          curl -X POST \
+            -H "Accept: application/json" \
+            -H "Authorization: Bearer $RENDER_API_KEY" \
+            "https://api.render.com/v1/services/$RENDER_SERVICE_ID/deploys"
+      
+      - name: Verificar despliegue
+        run: |
+          echo "Verificando despliegue en Render..."
+          sleep 30  # Dar tiempo para que el despliegue se complete
+          curl -f ${{ vars.RENDER_APP_URL }} || exit 1
