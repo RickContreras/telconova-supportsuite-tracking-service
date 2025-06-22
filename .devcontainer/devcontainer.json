@@ -19,8 +19,7 @@
                 "redhat.java",
                 "vmware.vscode-boot-dev-pack",
                 "mtxr.sqltools-driver-pg",
-                "github.copilot",
-                "eamodio.gitlens"
+                "github.copilot"
             ],
             "settings": {
                 "sqltools.connections": [
@@ -52,7 +51,9 @@
     "forwardPorts": [
         8080,
         5432,
-        6379
+        6379,
+        9090,
+        3000
     ],
     "portsAttributes": {
         "8080": {
@@ -72,6 +73,18 @@
             "onAutoForward": "silent",
             "protocol": "http",
             "visibility": "public"
+        },
+        "9090": {
+            "label": "Prometheus",
+            "onAutoForward": "notify",
+            "protocol": "http",
+            "visibility": "public"
+        },
+        "3000": {
+            "label": "Grafana",
+            "onAutoForward": "notify",
+            "protocol": "http",
+            "visibility": "public"
         }
     },
     "remoteUser": "vscode",
@@ -80,6 +93,7 @@
         "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
     ],
     "remoteEnv": {
+        //Descomentar para usar en local con devcontainer
         //"TESTCONTAINERS_HOST_OVERRIDE": "host.docker.internal",
         //"DOCKER-HOST": "unix:///var/run/docker.sock",
         "TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE": "/var/run/docker.sock"
