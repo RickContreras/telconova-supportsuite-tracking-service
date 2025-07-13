@@ -26,8 +26,8 @@ public class SwaggerConfig {
         @Bean
         public OpenAPI customOpenAPI() {
                 return new OpenAPI()
-                                .addServersItem(new Server().url("http://localhost:" + serverPort))
-                                .addServersItem(new Server().url(productionServerUrl))
+                                // .addServersItem(new Server().url("http://localhost:" + serverPort))
+                                // .addServersItem(new Server().url(productionServerUrl))
                                 .components(new Components().addSecuritySchemes("bearerAuth",
                                                 new SecurityScheme().type(SecurityScheme.Type.HTTP)
                                                                 .scheme("bearer")
