@@ -46,7 +46,7 @@ public class SecurityConfig {
                                                                 "/swagger-ui.html", "/api-docs/**")
                                                 .permitAll()
                                                 // Endpoints que requieren roles específicos
-                                                .requestMatchers("/actuator/**").hasRole("ADMIN")
+                                                .requestMatchers("/actuator/**").permitAll()
                                                 .requestMatchers("/api/v1/avances")
                                                 .hasAnyRole("TECNICO", "SUPERVISOR", "ADMIN")
                                                 .requestMatchers("/api/v1/avances/*/editar-tiempo")
